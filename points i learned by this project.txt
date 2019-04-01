@@ -1,0 +1,10 @@
+1- innodb for relationships
+2- using php.ini for packages
+3- using jobs and database queue
+4- php artisan queue:listen --tries=1
+5- relations manual
+6- adding dependecy injection by bind in service provider
+7- adding custom routes and making prefixes for them
+8- by devoloping some apps i learned about web framework structures
+   like managers and console in python flask
+9- i learned about redis and cache and realtime web
