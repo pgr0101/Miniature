@@ -4,6 +4,7 @@ namespace App\Rules;
 
 use Illuminate\Contracts\Validation\Rule;
 use App\Error;
+use App\Label as Labelt;
 
 class label implements Rule
 {
@@ -39,81 +40,141 @@ class label implements Rule
         $slt  = "slt\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $nand = "nand\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $or   = "or\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-
-        // for i type checking if groups 2 , 3 gte 0 and lt 15 the last one digit :
         $addi = "addi\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $ori  = "ori\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $slti = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-
-
-        // exceptions  : // label is just the line number
-        // **offset can be label and also be the line number offset in 16bits
         $sw = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $lw = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $beq = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $lui = "lui\\s+(\\d+)\\s*,\\s*(\\d+)";
-
         $halt = "halt\\s*";
         $jalr = "jalr\\s+(\\d+)\\s*,\\s*(\\d+)\\s*";
         $j = "j\\s+(\\d+)";
-
-
-
-        $label = "/(?P<label>[a-zA-Z]{1}[a-zA-Z0-9]{1,14})\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)/";
-        $fill = "/(?P<label>[a-zA-Z]{1}[a-zA-Z0-9]{1,14})\\s+\.fill\\s+(?P<value>\\d+)/";
-        $space = "/(?P<label>[a-zA-Z]{1}[a-zA-Z0-9]{1,14})\\s+\.fill\\s+(?P<value>\\d+)/";
-
-        // directives are used for run and labels just have the line number
-        // in that place we can store code or value by .fill .space or ....
-        // for space we have to check space for execution and checking the memory in correct way
+        $j1 = "j\\s+(?P<offset>\\w+)";
+        $sw1 = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
+        $lw1 = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
+        $beq1 = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
+        $label = "/(?P<label>\\w{1,16})\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)/";
+        $lbltest = "\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)";
+        $codet = "/($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr|$j1|$sw1|$lw1|$beq1)/";
+        $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
+        $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
+        $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[a-zA-Z]{1}[a-zA-Z0-9]+))/";
+        $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
         $answer = true;
         $i = 1;
+        $lbls = array();
         foreach($array as $line){
+            // scope problem have to change if rules
+
             $groups = array();
 
             if(preg_match($label , $line , $groups)){
-                $lbl = "/".$groups['label']."\\s*"."/";
+                $lbl = "/".$groups['label'].$lbltest."/";
                 if(preg_match_all($lbl, $value) < 2){
+                    $lbl = new Labelt;
+                    $lbl->label = $groups['label'];
+                    $lbl->line = $i-1;
+                    $lbl->code_id = $this->code_id;
+                    $lbl->save();
                     $i++;
                     continue;
                 }else{
                     $error = new Error;
-                    $error->error = "there is a problem on line : " . $i;
+                    $error->error = "problem with label definition on line : " . $i;
                     $error->code_id = $this->code_id;
                     $error->save();
                     $answer = false;
                     $i++;
+                    continue;
                 }
             }
 
-            if(!preg_match($fill , $line , $groups) && strpos($line,'.fill')){
+            if(preg_match($fill1 , $line , $groups) && strpos($line,'.fill')){
+                $i++;
+                continue;
+            }
+
+            if((!preg_match($fillneg , $line , $groups) && !preg_match($fill , $line , $groups)) && strpos($line,'.fill')){
                 $error = new Error;
-                $error->error = "there is a problem on line : " . $i;
+                $error->error = "problem with label definition on line : " . $i;
                 $error->code_id = $this->code_id;
                 $error->save();
                 $answer = false;
+                $i++;
+                continue;
+            }else if(preg_match($fillneg , $line , $groups)){
+                $lbl = new Labelt;
+                $lbl->label = $groups['label'];
+                $lbl->line = $i-1;
+                $lbl->value = $groups['value'];
+                $lbl->code_id = $this->code_id;
+                $lbl->save();
+                $i++;
+                continue;
+            }else if(preg_match($fill , $line , $groups)){
+                $lbl = new Labelt;
+                $lbl->label = $groups['label'];
+                $lbl->line = $i-1;
+                $lbl->value = $groups['value'];
+                $lbl->code_id = $this->code_id;
+                $lbl->save();
                 $i++;
                 continue;
             }
 
             if(!preg_match($space , $line , $groups) && strpos($line,'.space')){
                 $error = new Error;
-                $error->error = "there is a problem on line : " . $i;
+                $error->error = "problem with label definition on line : " . $i;
                 $error->code_id = $this->code_id;
                 $error->save();
                 $answer = false;
                 $i++;
                 continue;
+            }else if(preg_match($space , $line , $groups)){
+                $lbl = new Labelt;
+                $lbl->label = $groups['label'];
+                $lbl->line = $i-1;
+                $lbl->value = $groups['value'];
+                $lbl->code_id = $this->code_id;
+                $lbl->save();
+                $i++;
+                continue;
             }
 
+
+            if(preg_match($codet , $line , $groups)){
+                $i++;
+                continue;
+            }
+
+            $error = new Error;
+            $error->error = "problem with label definition on line : " . $i;
+            $error->code_id = $this->code_id;
+            $error->save();
+            $answer = false;
             $i++;
         }
-
-
+        $i = 0;
+        foreach($array as $line){
+            if(preg_match($fill1 , $line , $groups)){
+                $lbl = new Labelt;
+                $lbl->label = $groups['label'];
+                $lbl->line = $i+1;
+                $lblt = Labelt::where('label' , $groups['value'])
+                              ->where('code_id' , $this->code_id)
+                              ->first();
+                $lbl->value = $lblt->line;
+                $lbl->code_id = $this->code_id;
+                $lbl->save();
+                $i++;
+                continue;
+            }
+            $i++;
+        }
         return $answer;
     }
-
     /**
      * Get the validation error message.
      *

@@ -52,14 +52,19 @@ class translate implements ShouldQueue
     protected function fourBitHelper($decimal){
         $answer = decbin($decimal);
         $len = strlen($answer);
-        if($len == 1){
-            return "000".$answer;
-        }
-        if($len == 2){
-            return "00".$answer;
-        }
-        if($len == 3){
-            return "0".$answer;
+        switch ($len) {
+            case 1:{
+                return "000".$answer;
+            }break;
+            case 2:{
+                return "00".$answer;
+            }break;
+            case 3:{
+                return "0".$answer;
+            }break;
+            case 4:{
+                return $answer;
+            }break;
         }
         return $answer;
     }
@@ -90,7 +95,7 @@ class translate implements ShouldQueue
         }
 
         if($decimal < 0){
-            for ($j=31; $j >=0 ; $j--) {
+            for ($j=15; $j >=0 ; $j--) {
                 if($imm[$j] == 0){
                     $imm[$j] = 1;
                 }else{
@@ -99,6 +104,7 @@ class translate implements ShouldQueue
             }
             $imm = $this->binaryPlusPlus($imm);
         }
+
         return $imm;
 
     }
@@ -129,6 +135,7 @@ class translate implements ShouldQueue
 
     }
 
+    // TODO : this is not complete and has problem
     protected function binaryPlusPlus($imm){
         // TODO adding 1 to binary string
         $i = 31;
@@ -145,31 +152,28 @@ class translate implements ShouldQueue
     }
 
     public function translate($value){
-    // for r type checking if groups 2 , 3 , 4 gte 0 and lt 15 :
+
         $add  = "/add\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $sub  = "/sub\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $slt  = "/slt\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $nand = "/nand\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $or   = "/or\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
-        // for i type checking if groups 2 , 3 gte 0 and lt 15 the last one digit :
         $addi = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
         $ori  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
         $slti = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
-        // exceptions  : // label is just the line number
-        // **offset can be label and also be the line number offset in 16bits
-        $sw = "/sw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
-        $lw = "/lw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
-        $beq = "/beq\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
+        $sw = "/sw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
+        $lw = "/lw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
+        $beq = "/beq\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
         $lui = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
         $halt = "/halt\\s*/";
         $jalr = "/jalr\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*/";
-        $j = "/j\\s+(?P<offset>\\d+)/";
-        // label and directives
-        // changing label
-        $label = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+:)/";
+        $j = "/j\\s+(?P<offset>\\w+)/";
 
-        $fill = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+.fill\\s+(?P<value>\\d+))/";
-        $space = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+.fill\\s+(?P<value>\\d+))/";
+        $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
+        $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
+        $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\w+))/";
+
+        $space = "/((?P<label>\\w{1,16})\\s+.space\\s+(?P<value>\\d+))/";
 
         $answer = "";
         $i = 0;
@@ -188,9 +192,10 @@ class translate implements ShouldQueue
                 $rd = $this->fourBitHelper($groups['rd']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("000000000000".$rd.$rt.$rs."0000"."0000");
+                $temp = bindec("0000"."0000".$rs.$rt.$rd."000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
-                 continue;   
+                 continue;
             }
 
             if(preg_match($sub , $line , $groups)){
@@ -198,7 +203,8 @@ class translate implements ShouldQueue
                 $rd = $this->fourBitHelper($groups['rd']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("000000000000".$rd.$rt.$rs."0001"."0000");
+                $temp = bindec("0000"."0001".$rs.$rt.$rd."000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -208,7 +214,8 @@ class translate implements ShouldQueue
                 $rd = $this->fourBitHelper($groups['rd']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("000000000000".$rd.$rt.$rs."0010"."0000");
+                $temp = bindec("0000"."0010".$rs.$rt.$rd."000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -218,7 +225,8 @@ class translate implements ShouldQueue
                 $rd = $this->fourBitHelper($groups['rd']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("000000000000".$rd.$rt.$rs."0011"."0000");
+                $temp = bindec("0000"."0011".$rs.$rt.$rd."000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -228,7 +236,8 @@ class translate implements ShouldQueue
                 $rd = $this->fourBitHelper($groups['rd']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("000000000000".$rd.$rt.$rs."0100"."0000");
+                $temp = bindec("0000"."0100".$rs.$rt.$rd."000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -238,7 +247,8 @@ class translate implements ShouldQueue
                 $imm = $this->sixteenBitHelper($groups['imm']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."0101"."0000");
+                $temp = bindec("0000"."0101".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -248,7 +258,8 @@ class translate implements ShouldQueue
                 $imm = $this->sixteenBitHelper($groups['imm']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."0110"."0000");
+                $temp = bindec("0000"."0110".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -258,7 +269,8 @@ class translate implements ShouldQueue
                 $imm = $this->sixteenBitHelper($groups['imm']);
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."0111"."0000");
+                $temp = bindec("0000"."0111".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -267,7 +279,8 @@ class translate implements ShouldQueue
                 // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
                 $imm = $this->sixteenBitHelper($groups['imm']);
                 $rt = $this->fourBitHelper($groups['rt']);
-                $temp = bin2hex($imm.$rt."0000"."1000"."0000");
+                $temp = bindec("0000"."1000"."0000".$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -279,13 +292,14 @@ class translate implements ShouldQueue
                     $imm = $this->sixteenBitHelper($groups['offset']);
                 }else{
                     $lbl = Label::where('code_id' , $this->code->id)
-                                ->where('label' , $groups['label'])
+                                ->where('label' , $groups['offset'])
                                 ->first();
                     $imm = $this->sixteenBitHelper($lbl->line);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."1001"."0000");
+                $temp = bindec("0000"."1001".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -297,13 +311,14 @@ class translate implements ShouldQueue
                     $imm = $this->sixteenBitHelper($groups['offset']);
                 }else{
                     $lbl = Label::where('code_id' , $this->code->id)
-                                ->where('label' , $groups['label'])
+                                ->where('label' , $groups['offset'])
                                 ->first();
                     $imm = $this->sixteenBitHelper($lbl->line);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."1010"."0000");
+                $temp = bindec("0000"."1010".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -315,13 +330,14 @@ class translate implements ShouldQueue
                     $imm = $this->sixteenBitHelper($groups['offset']);
                 }else{
                     $lbl = Label::where('code_id' , $this->code->id)
-                                ->where('label' , $groups['label'])
+                                ->where('label' , $groups['offset'])
                                 ->first();
                     $imm = $this->sixteenBitHelper($lbl->line);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex($imm.$rt.$rs."1011"."0000");
+                $temp = bindec("0000"."1011".$rs.$rt.$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -333,11 +349,12 @@ class translate implements ShouldQueue
                     $imm = $this->sixteenBitHelper($groups['offset']);
                 }else{
                     $lbl = Label::where('code_id' , $this->code->id)
-                                ->where('label' , $groups['label'])
+                                ->where('label' , $groups['offset'])
                                 ->first();
                     $imm = $this->sixteenBitHelper($lbl->line);
                 }
-                $temp = bin2hex($imm."00000000"."1101"."0000");
+                $temp = bindec("0000"."1101"."00000000".$imm);
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
@@ -346,40 +363,54 @@ class translate implements ShouldQueue
                 // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
-                $temp = bin2hex("0000000000000000".$rt.$rs."1100"."0000");
+                $temp = bindec("0000"."1100".$rs.$rt."0000000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
 
             if(preg_match($halt , $line , $groups) ){
                 // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
-                $temp = bin2hex("000000000000000000000000"."1110"."0000");
+                $temp = bindec("0000"."1110"."000000000000000000000000");
+                //$temp = dechex($temp);
                 $answer.=($temp."\n");
                 continue;
             }
 
-
-            // work with database
-            if(preg_match($space , $line , $froups)){
+            if(preg_match($space , $line , $groups)){
                 // address f first and making space with 0 value for label value
-                $value = $groups['value'];
-                for ($i=0; $i < $value; $i++) {
+                $val = $groups['value'];
+                for ($i=0; $i < $val; $i++) {
                     $answer.=("0\n");
                 }
-                continue;
-            }
-
-            // think more
-            if(preg_match($label , $line)){
-                // just label name
-                // adding the command
                 continue;
             }
 
             if(preg_match($fill , $line , $groups)){
                 // if it has value put the value in 32 bits
                 $temp = $this->signedExtention($groups['value']);
-                $answer.=($temp."\n");
+                $lblt = Label::where('code_id' , $this->code->id)
+                             ->where('label' , $groups['label'])
+                             ->first();
+                $answer.=($lblt->value."\n");
+                continue;
+            }
+
+            if(preg_match($fill1 , $line , $groups)){
+                // if it has value put the value in 32 bits
+                $lbl = Label::where('label' , $groups['label'])
+                            ->where('code_id' , $this->code->id)
+                            ->first();
+                $answer.=($lbl->value."\n");
+                continue;
+            }
+
+            if(preg_match($fillneg , $line , $groups)){
+                // if it has value put the value in 32 bits
+                $lbl = Label::where('label' , $groups['label'])
+                            ->where('code_id' , $this->code->id)
+                            ->first();
+                $answer.=($lbl->value."\n");
                 continue;
             }
 

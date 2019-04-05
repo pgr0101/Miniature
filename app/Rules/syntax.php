@@ -5,6 +5,7 @@ namespace App\Rules;
 //require_once base_path('vendor/spatie/regex/src/Regex.php');
 use Illuminate\Contracts\Validation\Rule;
 use App\Error;
+use App\Label;
 //use Spatie\Regex\Regex;
 
 class syntax implements Rule
@@ -39,30 +40,43 @@ class syntax implements Rule
         $slt  = "/slt\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $nand = "/nand\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
         $or   = "/or\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
-
-        // for i type checking if groups 2 , 3 gte 0 and lt 15 the last one digit :
         $addi = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
         $ori  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
         $slti = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
-
-
-        // exceptions  : // label is just the line number
-        // **offset can be label and also be the line number offset in 16bits
         $sw = "/sw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
         $lw = "/lw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
         $beq = "/beq\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\d+)/";
         $lui = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
-
         $halt = "/halt\\s*/";
         $jalr = "/jalr\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*/";
         $j = "/j\\s+(?P<offset>\\d+)/";
+        $j1 = "/j\\s+(?P<offset>\\w+)/";
+        $sw1 = "/sw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
+        $lw1 = "/lw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
+        $beq1 = "/beq\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
+        $addt  = "add\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $subt  = "sub\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $sltt  = "slt\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $nandt = "nand\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $ort   = "or\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $addit = "addi\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $orit  = "ori\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $sltit = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $swt = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $lwt = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $beqt = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $luit = "lui\\s+(\\d+)\\s*,\\s*(\\d+)";
+        $haltt = "halt\\s*";
+        $jalrt = "jalr\\s+(\\d+)\\s*,\\s*(\\d+)\\s*";
+        $jt = "j\\s+(\\d+)";
+        $label = "/(?P<label>\\w{1,16})\\s+($addt|$subt|$sltt|$nandt|$ort|$addit|$orit|$sltit|$swt|$lwt|$beqt|$luit|$haltt|$jt|$jalrt)/";
+        $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
+        $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
+        $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\w+))/";
+        $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
-        // label and directives
-        $label = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+:)/";
-        $fill = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+.fill\\s+(?P<value>\\d+))/";
-        $space = "/((?P<label>[a-zA-Z]+[a-zA-Z0-9]{1,14})\\s+.fill\\s+(?P<value>\\d+))/";
 
-        // for all immediates limited to 65536
+
         $answer = true;
         $i = 1;
         $array =  explode( "\n", $value);
@@ -77,8 +91,26 @@ class syntax implements Rule
                 continue;
             }
 
+            if(preg_match($j1 , $line , $groups) || preg_match($sw1 , $line , $groups) ||
+                preg_match($beq1 , $line , $groups) || preg_match($lw1 , $line , $groups) ){
+                $lbl = Label::where('label' , $groups['offset'])->first();
+                if($lbl != null){
+                    $i++;
+                    continue;
+                }
+            }
+
+            if(preg_match($fill1 , $line , $groups)){
+                $lbl = Label::where('label' , $groups['label'])->first();
+                if($lbl != null){
+                    $i++;
+                    continue;
+                }
+            }
+
             // label and directives
-            if(preg_match($label , $line) || preg_match($space , $line) || preg_match($fill , $line)){
+            if(preg_match($label , $line) || preg_match($space , $line)
+                || preg_match($fill , $line) || preg_match($fillneg , $line)){
                 $i++;
                 continue;
             }
