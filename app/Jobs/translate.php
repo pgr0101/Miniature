@@ -104,7 +104,6 @@ class translate implements ShouldQueue
             }
             $imm = $this->binaryPlusPlus($imm);
         }
-
         return $imm;
 
     }
@@ -135,19 +134,12 @@ class translate implements ShouldQueue
 
     }
 
-    // TODO : this is not complete and has problem
     protected function binaryPlusPlus($imm){
-        // TODO adding 1 to binary string
-        $i = 31;
-        while($i>=0){
-            if($imm[$i] == 0){
-                $imm[$i] = 1;
-                break;
-            }else{
-                $imm[$i] = 0;
-            }
-            $i--;
-        }
+        $answer = bindec($imm);
+        $answer++;
+        $answer = decbin($answer);
+        if(strlen($answer) > 16)
+            $answer = substr($answer , -16 , 16);
         return $answer;
     }
 
