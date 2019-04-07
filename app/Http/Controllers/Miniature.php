@@ -34,7 +34,6 @@ class Miniature extends Controller
         $code->user_id = $user->id;
         $str = "";
         $code->save();
-
         // making the validator for checking
         $validator = Validator::make($req->all(), [
             'code' => [new labelval($code->id) , new syntax($code->id)],

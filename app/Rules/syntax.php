@@ -75,6 +75,7 @@ class syntax implements Rule
         $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\w+))/";
         $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
+        $comment = "/\\s*#(\\S*|\\s*)*/";
 
 
         $answer = true;
@@ -84,6 +85,10 @@ class syntax implements Rule
         foreach($array as $line){
 
             $groups = array();
+
+            if(preg_match($comment , $line)){
+                continue;
+            }
 
             if($line == "" || $line == "\n" || (
                 preg_match('/\\s+/' , $line && !preg_match('/\\w+/' , $line)))){
@@ -123,7 +128,8 @@ class syntax implements Rule
                 if( $groups['rd'] != null && $groups['rs'] != null && $groups['rt'] != null &&
                     $groups['rd'] < 16 && $groups['rd'] > -1 &&
                     $groups['rs'] < 16 && $groups['rs'] > -1 &&
-                    $groups['rt'] < 16 && $groups['rt'] > -1 ){
+                    $groups['rt'] < 16 && $groups['rt'] > -1 &&
+                    $groups['rd'] != 0){
                         $i++;
                         continue;
                 }
@@ -134,7 +140,8 @@ class syntax implements Rule
                 if( $groups['imm'] != null && $groups['rs'] != null && $groups['rt'] != null &&
                     $groups['imm'] < 65536  && $groups['imm'] > -65536  &&
                     $groups['rs'] < 16 && $groups['rs'] > -1 &&
-                    $groups['rt'] < 16 && $groups['rt'] > -1){
+                    $groups['rt'] < 16 && $groups['rt'] > -1 &&
+                    $groups['rt'] != 0){
                         $i++;
                         continue;
                 }
@@ -145,7 +152,8 @@ class syntax implements Rule
             // checking the groups then break
                 if( $groups['imm'] != null && $groups['rt'] != null &&
                     $groups['rt'] < 16 && $groups['rt'] > -1 &&
-                    $groups['imm'] < 65536 && $groups['imm'] > -65536){
+                    $groups['imm'] < 65536 && $groups['imm'] > -65536
+                    && $groups['rt'] != 0){
                         $i++;
                         continue;
                 }
@@ -184,7 +192,8 @@ class syntax implements Rule
             if(preg_match($jalr , $line , $groups)){
                 // checking the groups then break
                 if( $groups['rs'] < 16 && $groups['rs'] > -1 &&
-                    $groups['rt'] < 16 && $groups['rt'] > -1){
+                    $groups['rt'] < 16 && $groups['rt'] > -1 &&
+                    $groups['rt'] != 0){
                         $i++;
                         continue;
                 }

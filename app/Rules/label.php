@@ -62,6 +62,9 @@ class label implements Rule
         $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[a-zA-Z]{1}[a-zA-Z0-9]+))/";
         $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
+        $comment = "/\\s*#(\\S*|\\s*)*/";
+
+
         $answer = true;
         $i = 1;
         $lbls = array();
@@ -69,6 +72,10 @@ class label implements Rule
             // scope problem have to change if rules
 
             $groups = array();
+
+            if(preg_match($comment , $line)){
+                continue;
+            }
 
             if(preg_match($label , $line , $groups)){
                 $lbl = "/".$groups['label'].$lbltest."/";
@@ -158,6 +165,11 @@ class label implements Rule
         }
         $i = 0;
         foreach($array as $line){
+
+            if(preg_match($comment , $line)){
+                continue;
+            }
+
             if(preg_match($fill1 , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];

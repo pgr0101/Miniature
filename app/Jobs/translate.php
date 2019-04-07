@@ -167,12 +167,19 @@ class translate implements ShouldQueue
 
         $space = "/((?P<label>\\w{1,16})\\s+.space\\s+(?P<value>\\d+))/";
 
+        $comment = "/\\s*#(\\S*|\\s*)*/";
+
+
         $answer = "";
         $i = 0;
         $array =  explode( "\n", $value);
 
         foreach($array as $line){
             $groups = array();
+
+            if(preg_match($comment , $line)){
+                continue;
+            }
 
             if($line == "" || $line == "\n" || (
                 preg_match('/\\s+/' , $line && !preg_match('/\\w+/' , $line)))){
