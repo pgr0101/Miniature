@@ -48,7 +48,31 @@ class translate implements ShouldQueue
         $code->save();
     }
 
-    // some helper methods
+    // Helpers methods :
+
+    // bindec both negative and positive numbers
+    function bindec32($bin){
+        if (strlen($bin) == 32 && $bin[0] == '1') {
+            for ($i = 0; $i < 32; $i++) {
+                $bin[$i] = $bin[$i] == '1' ? '0' : '1';
+            }
+
+            return (bindec($bin) + 1) * -1;
+        }
+        return bindec($bin);
+    }
+
+    function bindec16($bin){
+        if (strlen($bin) == 16 && $bin[0] == '1') {
+            for ($i = 0; $i < 16; $i++) {
+                $bin[$i] = $bin[$i] == '1' ? '0' : '1';
+            }
+
+            return (bindec($bin) + 1) * -1;
+        }
+        return bindec($bin);
+    }
+
     protected function fourBitHelper($decimal){
         $answer = decbin($decimal);
         $len = strlen($answer);
@@ -69,8 +93,6 @@ class translate implements ShouldQueue
         return $answer;
     }
 
-
-    // for execution
     protected function zeroExtention($decimal){
         // adding all zero till 32bits
         $imm = "00000000000000000000000000000000";
@@ -83,65 +105,41 @@ class translate implements ShouldQueue
         return $imm;
     }
 
-
     protected function sixteenBitHelper($decimal){
-        $imm = "0000000000000000";
-        $answer = "".decbin($decimal);
-        $i = 15;
 
-        for($j = strlen($answer)-1 ; $j >= 0 ; $j--){
-            $imm[$i] = $answer[$j];
-            $i--;
-        }
-
-        if($decimal < 0){
-            for ($j=15; $j >=0 ; $j--) {
-                if($imm[$j] == 0){
-                    $imm[$j] = 1;
-                }else{
-                    $imm[$j] = 0;
-                }
+		if($decimal < 0){
+            $imm = decbin($decimal);
+            $imm = substr($imm,-16,16);
+        }else{
+            $imm = decbin($decimal);
+            $temp = "0000000000000000";
+            $j = 15;
+            for($i = strlen($imm)-1 ; $i >= 0  ; $i--){
+                $temp[$j] = $imm[$i];
+                $j--;
             }
-            $imm = $this->binaryPlusPlus($imm);
+            $imm = $temp;
         }
         return $imm;
-
     }
 
-    // for execution
     protected function signedExtention($decimal){
         // making the signed binary value
-        $imm = "00000000000000000000000000000000";
-        $answer = "".decbin($decimal);
-        $i = 31;
-
-        for($j = strlen($answer)-1 ; $j >= 0 ; $j--){
-            $imm[$i] = $answer[$j];
-            $i--;
-        }
-
-        if($decimal < 0){
-            for ($j=31; $j >=0 ; $j--) {
-                if($imm[$j] == 0){
-                    $imm[$j] = 1;
-                }else{
-                    $imm[$j] = 0;
-                }
+		if($decimal < 0){
+            $imm = decbin($decimal);
+        }else{
+            $imm = decbin($decimal);
+            $temp = "00000000000000000000000000000000";
+            $j = 31;
+            for($i = strlen($imm)-1 ; $i >= 0  ; $i--){
+                $temp[$j] = $imm[$i];
+                $j--;
             }
-            $imm = $this->binaryPlusPlus($imm);
+            $imm = $temp;
         }
         return $imm;
-
     }
 
-    protected function binaryPlusPlus($imm){
-        $answer = bindec($imm);
-        $answer++;
-        $answer = decbin($answer);
-        if(strlen($answer) > 16)
-            $answer = substr($answer , -16 , 16);
-        return $answer;
-    }
 
     public function translate($value){
 
@@ -293,7 +291,8 @@ class translate implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                                 ->where('label' , $groups['offset'])
                                 ->first();
-                    $imm = $this->sixteenBitHelper($lbl->line);
+                    $val = $lbl->line;
+                    $imm = $this->sixteenBitHelper($val);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
@@ -312,7 +311,8 @@ class translate implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                                 ->where('label' , $groups['offset'])
                                 ->first();
-                    $imm = $this->sixteenBitHelper($lbl->line);
+                    $val = $lbl->line;
+                    $imm = $this->sixteenBitHelper($val);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
@@ -331,7 +331,8 @@ class translate implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                                 ->where('label' , $groups['offset'])
                                 ->first();
-                    $imm = $this->sixteenBitHelper($lbl->line);
+                $val = $lbl->line - $i - 1;
+                $imm = $this->sixteenBitHelper($val);
                 }
                 $rt = $this->fourBitHelper($groups['rt']);
                 $rs = $this->fourBitHelper($groups['rs']);
@@ -350,7 +351,9 @@ class translate implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                                 ->where('label' , $groups['offset'])
                                 ->first();
-                    $imm = $this->sixteenBitHelper($lbl->line);
+
+                    $val = $lbl->line;
+                    $imm = $this->sixteenBitHelper($val);
                 }
                 $temp = bindec("0000"."1101"."00000000".$imm);
                 //$temp = dechex($temp);
