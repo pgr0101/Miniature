@@ -54,7 +54,9 @@ class label implements Rule
         $sw1 = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
         $lw1 = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
         $beq1 = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
-        $label = "/(?P<label>\\w{1,16})\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)/";
+
+
+        $label = "/\\s*(?P<label>\\w+)\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)/";
         $lbltest = "\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)";
         $codet = "/($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr|$j1|$sw1|$lw1|$beq1)/";
         $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
@@ -63,7 +65,7 @@ class label implements Rule
         $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
         $comment = "/\\s*#(\\S*|\\s*)*/";
-
+        $newline = "/\n/";
 
         $answer = true;
         $i = 1;
@@ -72,10 +74,6 @@ class label implements Rule
             // scope problem have to change if rules
 
             $groups = array();
-
-            if(preg_match($comment , $line)){
-                continue;
-            }
 
             if(preg_match($label , $line , $groups)){
                 $lbl = "/".$groups['label'].$lbltest."/";
@@ -156,6 +154,11 @@ class label implements Rule
                 continue;
             }
 
+            if(preg_match($comment , $line) || $line == "\n"){
+                $i++;
+                continue;
+            }
+
             $error = new Error;
             $error->error = "problem with label definition on line : " . $i;
             $error->code_id = $this->code_id;
@@ -163,23 +166,28 @@ class label implements Rule
             $answer = false;
             $i++;
         }
+
         $i = 0;
         foreach($array as $line){
-
-            if(preg_match($comment , $line)){
-                continue;
-            }
-
             if(preg_match($fill1 , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];
-                $lbl->line = $i+1;
+                $lbl->line = $i;
                 $lblt = Labelt::where('label' , $groups['value'])
                               ->where('code_id' , $this->code_id)
+                              ->where('line' , '!=' , null)
                               ->first();
-                $lbl->value = $lblt->line;
-                $lbl->code_id = $this->code_id;
-                $lbl->save();
+                if($lblt){
+                    $lbl->value = $lblt->line;
+                    $lbl->code_id = $this->code_id;
+                    $lbl->save();
+                }else{
+                    $error = new Error;
+                    $error->error = "problem with label definition on line : " . ($i+1);
+                    $error->code_id = $this->code_id;
+                    $error->save();
+                    $answer = false;
+                }
                 $i++;
                 continue;
             }

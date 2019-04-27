@@ -169,7 +169,7 @@ class translate implements ShouldQueue
 
 
         $answer = "";
-        $i = 0;
+        $i = -1;
         $array =  explode( "\n", $value);
 
         foreach($array as $line){
@@ -178,6 +178,8 @@ class translate implements ShouldQueue
             if(preg_match($comment , $line)){
                 continue;
             }
+
+            $i++;
 
             if($line == "" || $line == "\n" || (
                 preg_match('/\\s+/' , $line && !preg_match('/\\w+/' , $line)))){
@@ -331,6 +333,7 @@ class translate implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                                 ->where('label' , $groups['offset'])
                                 ->first();
+
                 $val = $lbl->line - $i - 1;
                 $imm = $this->sixteenBitHelper($val);
                 }
@@ -416,7 +419,6 @@ class translate implements ShouldQueue
                 continue;
             }
 
-            $i++;
         }
 
         return $answer;

@@ -97,11 +97,13 @@ class Miniature extends Controller
         // then take all the codes from the database
         // we can use user->code_id and split with space
         $user = User::where('username', $req->route('username'))->first();
-        $codes = Code::where('user_id' , $user->id)->get();
+        $codes = Code::where('user_id' , $user->id)
+                     ->where('answer_id' , '!=' ,null)
+                     ->get();
         return response()->json([
             'status' => 200 ,
             'msg' => "found some posts" ,
-            'codess' => $codes
+            'codes' => $codes
         ]);
     }
 

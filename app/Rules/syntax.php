@@ -86,19 +86,22 @@ class syntax implements Rule
 
             $groups = array();
 
-            if(preg_match($comment , $line)){
+            if($line == "" || $line == "\n" ||
+            (preg_match('/\\s+/' , $line) && !preg_match('/\\w+/' , $line))){
+                $i++;
                 continue;
             }
 
-            if($line == "" || $line == "\n" || (
-                preg_match('/\\s+/' , $line && !preg_match('/\\w+/' , $line)))){
+            if(preg_match($comment , $line)){
                 $i++;
                 continue;
             }
 
             if(preg_match($j1 , $line , $groups) || preg_match($sw1 , $line , $groups) ||
                 preg_match($beq1 , $line , $groups) || preg_match($lw1 , $line , $groups) ){
-                $lbl = Label::where('label' , $groups['offset'])->first();
+                $lbl = Label::where('label' , $groups['offset'])
+                            ->where('code_id' , $this->code_id)
+                            ->first();
                 if($lbl != null){
                     $i++;
                     continue;
@@ -106,11 +109,8 @@ class syntax implements Rule
             }
 
             if(preg_match($fill1 , $line , $groups)){
-                $lbl = Label::where('label' , $groups['label'])->first();
-                if($lbl != null){
-                    $i++;
-                    continue;
-                }
+                $i++;
+                continue;
             }
 
             // label and directives
