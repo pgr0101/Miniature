@@ -92,10 +92,12 @@ class syntax implements Rule
                 continue;
             }
 
+
             if(preg_match($comment , $line)){
                 $i++;
                 continue;
             }
+
 
             if(preg_match($j1 , $line , $groups) || preg_match($sw1 , $line , $groups) ||
                 preg_match($beq1 , $line , $groups) || preg_match($lw1 , $line , $groups) ){

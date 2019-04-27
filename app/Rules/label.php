@@ -154,10 +154,15 @@ class label implements Rule
                 continue;
             }
 
-            if(preg_match($comment , $line) || $line == "\n"){
-                $i++;
+            if(preg_match($comment , $line)){
                 continue;
             }
+
+            if($line == "" || $line == "\n" ||
+            (preg_match('/\\s+/' , $line) && !preg_match('/\\w+/' , $line))){
+                continue;
+            }
+
 
             $error = new Error;
             $error->error = "problem with label definition on line : " . $i;
