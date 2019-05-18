@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\Execute;
 use Illuminate\Http\Request;
 use App\User;
 use Illuminate\Support\Facades\Hash;
@@ -14,6 +15,7 @@ use App\Error;
 use App\Jobs\translate;
 use App\Rules\label as labelval;
 use App\Rules\syntax;
+use App\Execute as ExeModel;
 
 
 class Miniature extends Controller
@@ -43,6 +45,7 @@ class Miniature extends Controller
         if(!$validator->fails()){
             // answer here
             translate::dispatch($code);
+            Execute::dispatch($code);
 
             // making the code_id relation manual
             if($user->code_id == null || $user->code_id == ""){
@@ -76,6 +79,7 @@ class Miniature extends Controller
     */
     public function getTheAnswer(Request $req){
         $answer = Answer::where('code_id' , $req->route('id'))->first();
+        $code = Code::where('id' , $req->route('id'))->first();
         if($answer == null){
             return response()->json([
                 'status' => 406 ,
@@ -85,7 +89,8 @@ class Miniature extends Controller
         return response()->json([
             'status' => 200 ,
             'msg' => "found the answer" ,
-            'answer' => $answer
+            'answer' => $answer ,
+            'code' => $code
         ]);
     }
 
@@ -169,4 +174,24 @@ class Miniature extends Controller
         }
     }
 
+    /**
+     * returning the answer of execution the most important part is
+     * the part of register changes it should be displayed by delay
+     * in the front-end part the user can set the delayed time
+    */
+    public function getExecution($id)
+    {
+        $exe = ExeModel::where('code_id' , $id)->first();
+        $data = [
+          'memoryusage' => $exe->memoryusage ,
+          'registerusage' => $exe->registerusage ,
+          'registerchanges' => unserialize($exe->exe)
+        ];
+        return response()->json([
+           'status' => 200 ,
+           'msg' => 'execution answer' ,
+           'data' => $data
+        ]);
+
+    }
 }

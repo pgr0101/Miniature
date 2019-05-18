@@ -61,11 +61,10 @@ class label implements Rule
         $codet = "/($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr|$j1|$sw1|$lw1|$beq1)/";
         $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
         $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
-        $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[a-zA-Z]{1}[a-zA-Z0-9]+))/";
+        $fill1 = "/((?P<label>\\w+)\\s+.fill\\s+(?P<value>[a-zA-Z]{1}\\w+))/";
         $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
 
         $comment = "/\\s*#(\\S*|\\s*)*/";
-        $newline = "/\n/";
 
         $answer = true;
         $i = 1;
@@ -75,31 +74,11 @@ class label implements Rule
 
             $groups = array();
 
-            if(preg_match($label , $line , $groups)){
-                $lbl = "/".$groups['label'].$lbltest."/";
-                if(preg_match_all($lbl, $value) < 2){
-                    $lbl = new Labelt;
-                    $lbl->label = $groups['label'];
-                    $lbl->line = $i-1;
-                    $lbl->code_id = $this->code_id;
-                    $lbl->save();
-                    $i++;
-                    continue;
-                }else{
-                    $error = new Error;
-                    $error->error = "problem with label definition on line : " . $i;
-                    $error->code_id = $this->code_id;
-                    $error->save();
-                    $answer = false;
-                    $i++;
-                    continue;
-                }
-            }
-
-            if(preg_match($fill1 , $line , $groups) && strpos($line,'.fill')){
+            if(preg_match($fill1 , $line , $groups)){
                 $i++;
                 continue;
             }
+
 
             if((!preg_match($fillneg , $line , $groups) && !preg_match($fill , $line , $groups)) && strpos($line,'.fill')){
                 $error = new Error;
@@ -128,6 +107,28 @@ class label implements Rule
                 $i++;
                 continue;
             }
+
+            if(preg_match($label , $line , $groups)){
+                $lbl = "/".$groups['label'].$lbltest."{1}/";
+                if(preg_match_all($lbl, $value) < 2){
+                    $lbl = new Labelt;
+                    $lbl->label = $groups['label'];
+                    $lbl->line = $i-1;
+                    $lbl->code_id = $this->code_id;
+                    $lbl->save();
+                    $i++;
+                    continue;
+                }else{
+                    $error = new Error;
+                    $error->error = "problem with label definition on line : " . $i;
+                    $error->code_id = $this->code_id;
+                    $error->save();
+                    $answer = false;
+                    $i++;
+                    continue;
+                }
+            }
+
 
             if(!preg_match($space , $line , $groups) && strpos($line,'.space')){
                 $error = new Error;

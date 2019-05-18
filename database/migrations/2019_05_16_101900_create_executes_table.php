@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateCodesTable extends Migration
+class CreateExecutesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,12 @@ class CreateCodesTable extends Migration
      */
     public function up()
     {
-        Schema::create('codes', function (Blueprint $table) {
+        Schema::create('executes', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('code');
-            $table->string('title');
-            $table->string('user_id')->nullable();
-            $table->string('answer_id')->nullable();
-            $table->string('execute_id')->nullable();
-            $table->string('error_id')->nullable();
+            $table->text('exe');
+            $table->unsignedBigInteger('code_id');
+            $table->double('memoryusage');
+            $table->double('registerusage');
             $table->timestamps();
         });
     }
@@ -32,6 +30,6 @@ class CreateCodesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('codes');
+        Schema::dropIfExists('executes');
     }
 }
