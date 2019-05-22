@@ -8,7 +8,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use App\Code;
+use App\Label;
 use App\Execute as EXE;
+use function MongoDB\BSON\toJSON;
+use function PHPSTORM_META\type;
 
 class Execute implements ShouldQueue
 {
@@ -22,9 +25,6 @@ class Execute implements ShouldQueue
     protected $exe = []; // exe for the answer that going to e serialized
 
     protected $ram = []; // if the app needs ram
-    protected $registers = [
-        0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
-    ]; // the most important part
 
     protected $registerusage = 0.0; // calculating in use
     protected $ramusage = 0.0; // checking ram usage from 16000
@@ -71,7 +71,7 @@ class Execute implements ShouldQueue
         $exe = new EXE;
         $exe->code_id = $this->code->id;
         $this->init();
-        $this->execute($this->code->code);
+        $this->execute();
         $exe->exe = serialize($this->exe);
         $exe->memoryusage = $this->ramusage;
         $exe->registerusage = $this->registerusage;
@@ -88,16 +88,21 @@ class Execute implements ShouldQueue
     /**
      * play the role of loader
     */
-    public function init($value)
+    public function init()
     {
         $this->ram = explode("\n" , $this->code->code);
     }
 
+
     public function execute()
     {
-        $regused = 0;
+        $regused = array_fill(0,16 , -1);
+        $registers = array_fill(0,16 , 0);
 
         while(true){
+            if($this->pc >= count($this->ram)){
+                break;
+            }
             $line = $this->ram[$this->pc];
             $groups = array();
             if(preg_match($this->comment , $line)){
@@ -133,125 +138,138 @@ class Execute implements ShouldQueue
             }
 
             if(preg_match($this->add , $line , $groups)){
-                $rdindex = (int)$groups('rd');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rd'))){
-                    array_add($regused , $groups('rd'));
-                }
-                $this->registers[$rdindex] = $this->registers[$rsindex] + $this->registers[$rtindex];
-                array_add($this->exe , [$rdindex => $this->registers[$rdindex]]);
+                $rdindex = (int)$groups['rd'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rdindex] = 1;
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rdindex] = (int)$registers[$rsindex] + (int)$registers[$rtindex];
+                array_push($this->exe , [$rdindex => $registers[$rdindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->sub , $line , $groups)){
-                $rdindex = (int)$groups('rd');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rd'))){
-                    array_add($regused , $groups('rd'));
-                }
-                $this->registers[$rdindex] = $this->registers[$rsindex] - $this->registers[$rtindex];
-                array_add($this->exe , [$rdindex => $this->registers[$rdindex]]);
+                $rdindex = (int)$groups['rd'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rdindex] = 1;
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rdindex] = (int)$registers[$rsindex] - (int)$registers[$rtindex];
+                array_push($this->exe , [$rdindex => $registers[$rdindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->slt , $line , $groups)){
-                $rdindex = (int)$groups('rd');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rd'))){
-                    array_add($regused , $groups('rd'));
-                }
-                if($this->registers[$rsindex] < $this->registers[$rtindex]){
-                    $this->registers[$rdindex] = 1;
+                $rdindex = (int)$groups['rd'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rdindex] = 1;
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                if($registers[$rsindex] < $registers[$rtindex]){
+                    $registers[$rdindex] = 1;
                 }else{
-                    $this->registers[$rdindex] = 0;
+                    $registers[$rdindex] = 0;
                 }
-                array_add($this->exe , [$rdindex => $this->registers[$rdindex]]);
+                array_push($this->exe , [$rdindex => $registers[$rdindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->or , $line , $groups)){
-                $rdindex = (int)$groups('rd');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rd'))){
-                    array_add($regused , $groups('rd'));
-                }
-                $this->registers[$rdindex] = bindec((decbin($this->registers[$rsindex]) | decbin($this->registers[$rtindex])));
-                array_add($this->exe , [$rdindex => $this->registers[$rdindex]]);
+                $rdindex = (int)$groups['rd'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rdindex] = 1;
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rdindex] = bindec((decbin($registers[$rsindex]) | decbin($registers[$rtindex])));
+                array_push($this->exe , [$rdindex => $registers[$rdindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->nand , $line , $groups)){
-                $rdindex = (int)$groups('rd');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rd'))){
-                    array_add($regused , $groups('rd'));
-                }
-                $this->registers[$rdindex] = bindec(!(decbin($this->registers[$rsindex]) & decbin($this->registers[$rtindex])));
-                array_add($this->exe , [$rdindex => $this->registers[$rdindex]]);
+                $rdindex = (int)$groups['rd'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rdindex] = 1;
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rdindex] = bindec(!(decbin($registers[$rsindex]) & decbin($registers[$rtindex])));
+                array_push($this->exe , [$rdindex => $registers[$rdindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->addi , $line , $groups)){
-                $imm = (int)$groups('imm');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                $this->registers[$rtindex] = $this->registers[$rsindex] + $imm;
-                array_add($this->exe , [$rtindex => $this->registers[$rtindex]]);
+                $imm = (int)$groups['imm'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rtindex] = (int)$registers[$rsindex] + (int)$imm;
+                array_push($this->exe , [$rtindex => $registers[$rtindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->slti , $line , $groups)){
-                $imm = (int)$groups('imm');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                if($this->registers[$rsindex] < $imm){
-                    $this->registers[$rtindex] = 1;
+                $imm = (int)$groups['imm'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                if($registers[$rsindex] < $imm){
+                    $registers[$rtindex] = 1;
                 }else{
-                    $this->registers[$rtindex] = 0;
+                    $registers[$rtindex] = 0;
                 }
-                array_add($this->exe , [$rtindex => $this->registers[$rtindex]]);
+                array_push($this->exe , [$rtindex => $registers[$rtindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->ori , $line , $groups)){
-                $imm = (int)$groups('imm');
-                $rsindex = (int)$groups('rs');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                $this->registers[$rtindex] = bindec((decbin($this->registers[$rsindex]) | decbin($imm)));
-                array_add($this->exe , [$rtindex => $this->registers[$rtindex]]);
+                $imm = (int)$groups['imm'];
+                $rsindex = (int)$groups['rs'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
+
+                $registers[$rtindex] = bindec((decbin($registers[$rsindex]) | decbin($imm)));
+                array_push($this->exe , [$rtindex => $registers[$rtindex]]);
                 $this->pc += 1;
                 continue;
             }
 
             if(preg_match($this->lui , $line , $groups) ){
-                $imm = (int)$groups('imm');
-                $rtindex = (int)$groups('rt');
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                $this->registers[$rtindex] = bindec(decbin($imm) << 16);
-                array_add($this->exe , [$rtindex => $this->registers[$rtindex]]);
+                $imm = (int)$groups['imm'];
+                $rtindex = (int)$groups['rt'];
+
+                $regused[$rtindex] = 1;
+
+                $registers[$rtindex] = bindec(decbin($imm) << 16);
+                array_push($this->exe , [$rtindex => $registers[$rtindex]]);
                 $this->pc += 1;
 
                 continue;
@@ -264,12 +282,17 @@ class Execute implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                         ->where('label' , $groups['offset'])
                         ->first();
-                    $imm = (int)$lbl->line;
+                    $imm = (int)$lbl->value;
+                    // TODO : handling line support
                 }
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                $this->registers[$groups['rt']] = $this->ram[$this->registers[$groups['rs']] + $imm];
+
+
+                $rtindex = (int)$groups['rt'];
+                $registers[$rtindex] = (int)$imm;
+                array_push($this->exe , [$rtindex => $registers[$rtindex]]);
+
+                $regused[$rtindex] = 1;
+
                 $this->pc += 1;
                 continue;
             }
@@ -282,10 +305,14 @@ class Execute implements ShouldQueue
                         ->where('label' , $groups['offset'])
                         ->first();
                     $imm = (int)$lbl->line;
-                    $lbl->value = $this->registers[$groups['rt']];
+                    $lbl->value = $registers[$groups['rt']];
                     $lbl->save();
                 }
-                $this->ram[$this->registers[$groups['rs']] + $imm] = $this->registers[$groups['rt']];
+
+                $regused[$groups['rt']] = 1;
+                $regused[$groups['rs']] = 1;
+
+                $this->ram[$registers[$groups['rs']] + $imm] = (int)$registers[$groups['rt']];
 
                 $this->pc += 1;
                 continue;
@@ -301,11 +328,13 @@ class Execute implements ShouldQueue
 
                     $imm = $lbl->line;
                 }
-                $rt = $this->registers($groups['rt']);
-                $rs = $this->registers($groups['rs']);
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
+                $rt = $registers($groups['rt']);
+                $rs = $registers($groups['rs']);
+
+                $regused[$groups['rt']] = 1;
+                $regused[$groups['rs']] = 1;
+
+
                 if($rs == $rt){
                     $this->pc = $imm;
                 }else{
@@ -329,17 +358,19 @@ class Execute implements ShouldQueue
 
             if(preg_match($this->jalr , $line , $groups)){
                 if(is_numeric($groups['rs'])){
-                    $imm = $this->registers[$groups['rs']];
+                    $imm = $registers[$groups['rs']];
                 }else{
                     $lbl = Label::where('code_id' , $this->code->id)
                         ->where('label' , $groups['rs'])
                         ->first();
                     $imm = (int)$lbl->line;
                 }
-                if(!contains($regused , $groups('rt'))){
-                    array_add($regused , $groups('rt'));
-                }
-                $this->registers[$groups['rt']] = $this->pc+1;
+
+                $regused[$groups['rs']] = 1;
+                $regused[$groups['rt']] = 1;
+
+
+                $registers[$groups['rt']] = $this->pc+1;
                 $this->pc = $imm;
                 continue;
             }
@@ -349,9 +380,8 @@ class Execute implements ShouldQueue
             }
 
         }
-
-        // TODO : handling execution here and also register usage at the end ***
-        $this->registerusage = count($regused) / 16;
+        $counts = array_count_values($regused );
+        $this->registerusage = $counts[1]/ 16;
         $this->ramusage = count($this->ram) / 16000;
     }
 }

@@ -21,7 +21,7 @@ Route::middleware(['miniatureauth'])->group(function () {
 
     Route::get('/uploads/{username}/{password}' , 'Miniature@getAllUploads');
 
-    Route::get('/getexecute/{username}/{password}/{id} , Miniature@getExecution');
+    Route::get('/getexecute/{username}/{password}/{id}' , 'Miniature@getExecution');
 
 });
 

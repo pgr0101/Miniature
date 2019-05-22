@@ -103,8 +103,9 @@ class Miniature extends Controller
         // we can use user->code_id and split with space
         $user = User::where('username', $req->route('username'))->first();
         $codes = Code::where('user_id' , $user->id)
-                     ->where('answer_id' , '!=' ,null)
-                     ->get();
+                      ->where('answer_id' , '!=' ,null)
+                      ->where('execute_id' , '!=' , null)
+                      ->get();
         return response()->json([
             'status' => 200 ,
             'msg' => "found some posts" ,
@@ -179,19 +180,25 @@ class Miniature extends Controller
      * the part of register changes it should be displayed by delay
      * in the front-end part the user can set the delayed time
     */
-    public function getExecution($id)
+    public function getExecution(Request $req)
     {
-        $exe = ExeModel::where('code_id' , $id)->first();
-        $data = [
-          'memoryusage' => $exe->memoryusage ,
-          'registerusage' => $exe->registerusage ,
-          'registerchanges' => unserialize($exe->exe)
-        ];
-        return response()->json([
-           'status' => 200 ,
-           'msg' => 'execution answer' ,
-           'data' => $data
-        ]);
-
+        $exe = ExeModel::where('code_id' , $req->route('id'))
+                        ->first();
+        if($exe){
+            $data = [
+                'memoryusage' => $exe->memoryusage ,
+                'registerusage' => $exe->registerusage ,
+                'registerchanges' => unserialize($exe->exe)
+            ];
+            return response()->json([
+                'status' => 200 ,
+                'msg' => 'execution answer' ,
+                'data' => $data
+            ]);
+        }else{
+            response()->json([
+               'msg' => "not found answer"
+            ]);
+        }
     }
 }
