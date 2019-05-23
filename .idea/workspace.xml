@@ -1,12 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8ceb1e5b-7dd3-4a36-b46f-afe05f157532" name="Default Changelist" comment="execution">
+    <list default="true" id="8ceb1e5b-7dd3-4a36-b46f-afe05f157532" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Execute.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Execute.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Http/Controllers/Miniature.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/Miniature.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Jobs/Execute.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Jobs/Execute.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Jobs/translate.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Jobs/translate.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Rules/label.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Rules/label.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Rules/syntax.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Rules/syntax.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2019_05_16_101900_create_executes_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2019_05_16_101900_create_executes_table.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/database/miniature.db" beforeDir="false" afterPath="$PROJECT_DIR$/database/miniature.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/api.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api.php" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -33,66 +37,43 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/Jobs/Execute.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
-              <caret line="383" column="46" lean-forward="true" selection-start-line="383" selection-start-column="46" selection-end-line="383" selection-end-column="46" />
+            <state relative-caret-position="781">
+              <caret line="61" column="37" selection-start-line="61" selection-start-column="37" selection-end-line="61" selection-end-column="37" />
               <folding>
                 <element signature="e#28#57#0#PHP" expanded="true" />
-                <element signature="e#2417#2489#0#PHP" />
-                <element signature="e#2494#2569#0#PHP" />
-                <element signature="e#2575#2655#0#PHP" />
-                <element signature="e#2660#3191#0#PHP" />
-                <element signature="e#3197#3238#0#PHP" />
-                <element signature="e#3243#3339#0#PHP" />
-                <element signature="e#3558#3630#0#PHP" />
-                <element signature="e#3717#3796#0#PHP" />
-                <element signature="e#3809#3966#0#PHP" />
-                <element signature="e#3982#4226#0#PHP" />
-                <element signature="e#4240#4358#0#PHP" />
-                <element signature="e#4372#4491#0#PHP" />
-                <element signature="e#4505#4624#0#PHP" />
-                <element signature="e#5055#5618#0#PHP" />
-                <element signature="e#5632#6299#0#PHP" />
-                <element signature="e#6313#6891#0#PHP" />
-                <element signature="e#6905#7486#0#PHP" />
-                <element signature="e#7500#8045#0#PHP" />
-                <element signature="e#8059#8708#0#PHP" />
-                <element signature="e#8722#9282#0#PHP" />
-                <element signature="e#9296#9784#0#PHP" />
-                <element signature="e#9798#10570#0#PHP" />
-                <element signature="e#10584#11243#0#PHP" />
-                <element signature="e#11257#12064#0#PHP" />
-                <element signature="e#12078#12542#0#PHP" />
-                <element signature="e#12556#13214#0#PHP" />
-                <element signature="e#13228#13312#0#PHP" />
+                <element signature="e#2800#2872#0#PHP" />
+                <element signature="e#3820#3899#0#PHP" />
+                <element signature="e#4298#4388#0#PHP" />
+                <element signature="e#4229#4300#0#PHP" />
+                <element signature="e#4310#4455#0#PHP" />
+                <element signature="e#5648#5720#0#PHP" />
+                <element signature="e#6728#7279#0#PHP" />
+                <element signature="e#7293#7844#0#PHP" />
+                <element signature="e#7858#8513#0#PHP" />
+                <element signature="e#8527#9093#0#PHP" />
+                <element signature="e#9107#9676#0#PHP" />
+                <element signature="e#9690#10183#0#PHP" />
+                <element signature="e#10197#10794#0#PHP" />
+                <element signature="e#10808#11316#0#PHP" />
+                <element signature="e#11330#11726#0#PHP" />
+                <element signature="e#12493#13244#0#PHP" />
+                <element signature="e#13258#14024#0#PHP" />
+                <element signature="e#14038#14502#0#PHP" />
+                <element signature="e#14516#15133#0#PHP" />
+                <element signature="e#15147#15231#0#PHP" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/app/Http/Controllers/Miniature.php">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="552">
-              <caret line="199" column="41" selection-start-line="199" selection-start-column="41" selection-end-line="199" selection-end-column="41" />
-              <folding>
-                <element signature="e#565#2115#0#PHP" />
-                <element signature="e#2121#2179#0#PHP" />
-                <element signature="e#4320#4497#0#PHP" />
-                <element signature="e#4502#5278#0#PHP" />
-                <element signature="e#5284#5493#0#PHP" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/routes/api.php">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="286">
-              <caret line="23" column="59" selection-start-line="23" selection-start-column="59" selection-end-line="23" selection-end-column="59" />
+            <state relative-caret-position="63">
+              <caret line="184" column="63" selection-start-line="184" selection-start-column="63" selection-end-line="184" selection-end-column="63" />
             </state>
           </provider>
         </entry>
@@ -108,6 +89,8 @@
       <find>array_push</find>
       <find>array_push1</find>
       <find>$this-&gt;registers</find>
+      <find>space</find>
+      <find>error</find>
     </findStrings>
     <replaceStrings>
       <replace>array_push1</replace>
@@ -121,13 +104,15 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/app/Jobs/translate.php" />
         <option value="$PROJECT_DIR$/database/migrations/2019_03_25_134940_create_codes_table.php" />
+        <option value="$PROJECT_DIR$/routes/api.php" />
         <option value="$PROJECT_DIR$/app/Execute.php" />
         <option value="$PROJECT_DIR$/database/migrations/2019_05_16_101900_create_executes_table.php" />
-        <option value="$PROJECT_DIR$/app/Http/Controllers/Miniature.php" />
-        <option value="$PROJECT_DIR$/routes/api.php" />
+        <option value="$PROJECT_DIR$/app/Jobs/translate.php" />
+        <option value="$PROJECT_DIR$/app/Rules/label.php" />
+        <option value="$PROJECT_DIR$/app/Rules/syntax.php" />
         <option value="$PROJECT_DIR$/app/Jobs/Execute.php" />
+        <option value="$PROJECT_DIR$/app/Http/Controllers/Miniature.php" />
       </list>
     </option>
   </component>
@@ -236,7 +221,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -258,19 +242,32 @@
             <path>
               <item name="Miniature" type="b2602c69:ProjectViewProjectNode" />
               <item name="Miniature" type="462c0819:PsiDirectoryNode" />
-              <item name="routes" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
+              <item name="Rules" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Miniature" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Miniature" type="462c0819:PsiDirectoryNode" />
+              <item name="database" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Miniature" type="b2602c69:ProjectViewProjectNode" />
+              <item name="Miniature" type="462c0819:PsiDirectoryNode" />
+              <item name="database" type="462c0819:PsiDirectoryNode" />
+              <item name="migrations" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
         </subPane>
       </pane>
       <pane id="Scope" />
+      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1558546864124" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1558546954647" />
     <property name="editor.config.ad.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="nodejs_package_manager_path" value="yarn" />
@@ -315,7 +312,8 @@
       <workItem from="1558190314281" duration="6797000" />
       <workItem from="1558514287739" duration="102000" />
       <workItem from="1558535487949" duration="176000" />
-      <workItem from="1558535814764" duration="10860000" />
+      <workItem from="1558535814764" duration="10981000" />
+      <workItem from="1558601746847" duration="11899000" />
     </task>
     <task id="LOCAL-00001" summary="initiallizing">
       <created>1554100327285</created>
@@ -352,17 +350,24 @@
       <option name="project" value="LOCAL" />
       <updated>1554837118998</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="execution debugging completed">
+      <created>1558546915293</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1558546915294</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="30547000" />
+    <option name="totallyTimeSpent" value="42567000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="784" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18305598" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1860817" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="npm" order="2" side_tool="true" />
       <window_info id="Favorites" order="3" side_tool="true" />
@@ -405,63 +410,31 @@
     <MESSAGE value="finishing the project version 1.0" />
     <MESSAGE value="version 1.0 adding comment ability" />
     <MESSAGE value="version 1.0 solving beq problem" />
-    <option name="LAST_COMMIT_MESSAGE" value="version 1.0 solving beq problem" />
+    <MESSAGE value="execution debugging completed" />
+    <option name="LAST_COMMIT_MESSAGE" value="execution debugging completed" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/app/Rules/syntax.php">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/Rules/label.php">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/database/migrations/2019_03_25_135043_create_answers_table.php">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Answer.php">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/app/Code.php">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/database/migrations/2019_03_25_134940_create_codes_table.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="323">
-          <caret line="21" column="35" selection-start-line="21" selection-start-column="35" selection-end-line="21" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/routes/channels.php">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/database/migrations/2019_05_16_101900_create_executes_table.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/app/Label.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Http/Controllers/Controller.php">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Execute.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="200">
-          <caret line="10" column="77" selection-start-line="10" selection-start-column="64" selection-end-line="10" selection-end-column="77" />
+          <caret line="10" column="86" selection-start-line="10" selection-start-column="86" selection-end-line="10" selection-end-column="86" />
           <folding>
             <element signature="e#23#62#0#PHP" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/Http/Controllers/Controller.php">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/Jobs/translate.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="569">
-          <caret line="203" lean-forward="true" selection-start-line="203" selection-end-line="203" />
-          <folding>
-            <element signature="e#28#57#0#PHP" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -469,58 +442,128 @@
     <entry file="file://$PROJECT_DIR$/routes/api.php">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
-          <caret line="23" column="59" selection-start-line="23" selection-start-column="59" selection-end-line="23" selection-end-column="59" />
+          <caret line="23" column="61" selection-start-line="23" selection-start-column="61" selection-end-line="23" selection-end-column="61" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/database/migrations/2019_03_25_134940_create_codes_table.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="323">
+          <caret line="21" column="38" selection-start-line="21" selection-start-column="28" selection-end-line="21" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Jobs/translate.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="271">
+          <caret line="169" lean-forward="true" selection-start-line="169" selection-end-line="173" />
+          <folding>
+            <element signature="e#28#57#0#PHP" expanded="true" />
+            <element signature="e#413#485#0#PHP" />
+            <element signature="e#490#609#0#PHP" />
+            <element signature="e#615#677#0#PHP" />
+            <element signature="e#682#1171#0#PHP" />
+            <element signature="e#1252#1530#0#PHP" />
+            <element signature="e#1536#1814#0#PHP" />
+            <element signature="e#1820#2302#0#PHP" />
+            <element signature="e#2308#2640#0#PHP" />
+            <element signature="e#2646#3096#0#PHP" />
+            <element signature="e#3102#3568#0#PHP" />
+            <element signature="e#5240#5313#0#PHP" />
+            <element signature="e#5346#5503#0#PHP" />
+            <element signature="e#5517#5970#0#PHP" />
+            <element signature="e#5984#6436#0#PHP" />
+            <element signature="e#6450#6902#0#PHP" />
+            <element signature="e#6916#7367#0#PHP" />
+            <element signature="e#7381#7834#0#PHP" />
+            <element signature="e#7848#8325#0#PHP" />
+            <element signature="e#8339#8816#0#PHP" />
+            <element signature="e#8830#9306#0#PHP" />
+            <element signature="e#9320#9741#0#PHP" />
+            <element signature="e#10087#10564#0#PHP" />
+            <element signature="e#10578#11055#0#PHP" />
+            <element signature="e#11069#11545#0#PHP" />
+            <element signature="e#11559#11980#0#PHP" />
+            <element signature="e#9755#10634#0#PHP" />
+            <element signature="e#10648#11527#0#PHP" />
+            <element signature="e#11541#12423#0#PHP" />
+            <element signature="e#12437#13201#0#PHP" />
+            <element signature="e#13215#13642#0#PHP" />
+            <element signature="e#13656#13966#0#PHP" />
+            <element signature="e#13980#14285#0#PHP" />
+            <element signature="e#14299#14722#0#PHP" />
+            <element signature="e#14736#15090#0#PHP" />
+            <element signature="e#15104#15460#0#PHP" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Rules/syntax.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="80" column="50" selection-start-line="80" selection-start-column="50" selection-end-line="80" selection-end-column="50" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Rules/label.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="64" column="50" selection-start-line="64" selection-start-column="50" selection-end-line="64" selection-end-column="50" />
+          <folding>
+            <element signature="e#2591#2694#0#PHP" />
+            <element signature="e#2720#3830#0#PHP" />
+            <element signature="e#3130#3830#0#PHP" />
+            <element signature="e#3484#3830#0#PHP" />
+            <element signature="e#3844#4635#0#PHP" />
+            <element signature="e#3963#4621#0#PHP" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/database/migrations/2019_05_16_101900_create_executes_table.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="275">
+          <caret line="18" column="34" selection-start-line="18" selection-start-column="34" selection-end-line="18" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Code.php">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/app/Jobs/Execute.php">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="781">
+          <caret line="61" column="37" selection-start-line="61" selection-start-column="37" selection-end-line="61" selection-end-column="37" />
+          <folding>
+            <element signature="e#28#57#0#PHP" expanded="true" />
+            <element signature="e#2800#2872#0#PHP" />
+            <element signature="e#3820#3899#0#PHP" />
+            <element signature="e#4298#4388#0#PHP" />
+            <element signature="e#4229#4300#0#PHP" />
+            <element signature="e#4310#4455#0#PHP" />
+            <element signature="e#5648#5720#0#PHP" />
+            <element signature="e#6728#7279#0#PHP" />
+            <element signature="e#7293#7844#0#PHP" />
+            <element signature="e#7858#8513#0#PHP" />
+            <element signature="e#8527#9093#0#PHP" />
+            <element signature="e#9107#9676#0#PHP" />
+            <element signature="e#9690#10183#0#PHP" />
+            <element signature="e#10197#10794#0#PHP" />
+            <element signature="e#10808#11316#0#PHP" />
+            <element signature="e#11330#11726#0#PHP" />
+            <element signature="e#12493#13244#0#PHP" />
+            <element signature="e#13258#14024#0#PHP" />
+            <element signature="e#14038#14502#0#PHP" />
+            <element signature="e#14516#15133#0#PHP" />
+            <element signature="e#15147#15231#0#PHP" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/app/Http/Controllers/Miniature.php">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="552">
-          <caret line="199" column="41" selection-start-line="199" selection-start-column="41" selection-end-line="199" selection-end-column="41" />
-          <folding>
-            <element signature="e#565#2115#0#PHP" />
-            <element signature="e#2121#2179#0#PHP" />
-            <element signature="e#4320#4497#0#PHP" />
-            <element signature="e#4502#5278#0#PHP" />
-            <element signature="e#5284#5493#0#PHP" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/Jobs/Execute.php">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="383" column="46" lean-forward="true" selection-start-line="383" selection-start-column="46" selection-end-line="383" selection-end-column="46" />
-          <folding>
-            <element signature="e#28#57#0#PHP" expanded="true" />
-            <element signature="e#2417#2489#0#PHP" />
-            <element signature="e#2494#2569#0#PHP" />
-            <element signature="e#2575#2655#0#PHP" />
-            <element signature="e#2660#3191#0#PHP" />
-            <element signature="e#3197#3238#0#PHP" />
-            <element signature="e#3243#3339#0#PHP" />
-            <element signature="e#3558#3630#0#PHP" />
-            <element signature="e#3717#3796#0#PHP" />
-            <element signature="e#3809#3966#0#PHP" />
-            <element signature="e#3982#4226#0#PHP" />
-            <element signature="e#4240#4358#0#PHP" />
-            <element signature="e#4372#4491#0#PHP" />
-            <element signature="e#4505#4624#0#PHP" />
-            <element signature="e#5055#5618#0#PHP" />
-            <element signature="e#5632#6299#0#PHP" />
-            <element signature="e#6313#6891#0#PHP" />
-            <element signature="e#6905#7486#0#PHP" />
-            <element signature="e#7500#8045#0#PHP" />
-            <element signature="e#8059#8708#0#PHP" />
-            <element signature="e#8722#9282#0#PHP" />
-            <element signature="e#9296#9784#0#PHP" />
-            <element signature="e#9798#10570#0#PHP" />
-            <element signature="e#10584#11243#0#PHP" />
-            <element signature="e#11257#12064#0#PHP" />
-            <element signature="e#12078#12542#0#PHP" />
-            <element signature="e#12556#13214#0#PHP" />
-            <element signature="e#13228#13312#0#PHP" />
-          </folding>
+        <state relative-caret-position="63">
+          <caret line="184" column="63" selection-start-line="184" selection-start-column="63" selection-end-line="184" selection-end-column="63" />
         </state>
       </provider>
     </entry>

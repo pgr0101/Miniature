@@ -182,6 +182,8 @@ class Miniature extends Controller
     */
     public function getExecution(Request $req)
     {
+        $code = Code::where('id' , $req->route('id'))->first();
+        Execute::dispatch($code);
         $exe = ExeModel::where('code_id' , $req->route('id'))
                         ->first();
         if($exe){

@@ -16,6 +16,7 @@ class CreateExecutesTable extends Migration
         Schema::create('executes', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->text('exe');
+            $table->string('code');
             $table->unsignedBigInteger('code_id');
             $table->double('memoryusage');
             $table->double('registerusage');

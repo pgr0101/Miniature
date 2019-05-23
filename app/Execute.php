@@ -8,7 +8,7 @@ use App\Code;
 class Execute extends Model
 {
     //
-    protected $fillable = ['code_id' , 'exe' , 'memoryusage' , 'registerusage'];
+    protected $fillable = ['code_id' , 'exe' , 'memoryusage' , 'registerusage' , 'code'];
 
     public function code()
     {

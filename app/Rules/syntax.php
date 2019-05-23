@@ -69,11 +69,22 @@ class syntax implements Rule
         $haltt = "halt\\s*";
         $jalrt = "jalr\\s+(\\d+)\\s*,\\s*(\\d+)\\s*";
         $jt = "j\\s+(\\d+)";
-        $label = "/(?P<label>\\w{1,16})\\s+($addt|$subt|$sltt|$nandt|$ort|$addit|$orit|$sltit|$swt|$lwt|$beqt|$luit|$haltt|$jt|$jalrt)/";
+        $addinegt = "addi\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(-\\d+)";
+        $orinegt  = "ori\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(-\\d+)";
+        $sltinegt = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(-\\d+)";
+        $luinegt = "lui\\s+(\\d+)\\s*,\\s*(-\\d+)";
+
+        $label = "/(?P<label>\\w{1,16})\\s+($addinegt|$orinegt|$sltinegt|$luinegt|$addt|$subt|$sltt|$nandt|$ort|$addit|$orit|$sltit|$swt|$lwt|$beqt|$luit|$haltt|$jt|$jalrt)/";
         $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
         $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
         $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\w+))/";
-        $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
+        $space = "/((?P<label>\\w{1,16})\\s+.space\\s+(?P<value>\\d+))/";
+
+        $addineg = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $orineg  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $sltineg = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $luineg = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+
 
         $comment = "/\\s*#(\\S*|\\s*)*/";
 
@@ -92,12 +103,10 @@ class syntax implements Rule
                 continue;
             }
 
-
             if(preg_match($comment , $line)){
                 $i++;
                 continue;
             }
-
 
             if(preg_match($j1 , $line , $groups) || preg_match($sw1 , $line , $groups) ||
                 preg_match($beq1 , $line , $groups) || preg_match($lw1 , $line , $groups) ){
@@ -149,6 +158,19 @@ class syntax implements Rule
                 }
             }
 
+            // I-Type
+            if(preg_match($addineg , $line , $groups) || preg_match($sltineg , $line , $groups) ||
+                preg_match($orineg , $line , $groups)){
+                if( $groups['imm'] != null && $groups['rs'] != null && $groups['rt'] != null &&
+                    $groups['imm'] < 65536  && $groups['imm'] > -65536  &&
+                    $groups['rs'] < 16 && $groups['rs'] > -1 &&
+                    $groups['rt'] < 16 && $groups['rt'] > -1 &&
+                    $groups['rt'] != 0){
+                    $i++;
+                    continue;
+                }
+            }
+
             // lui
             if(preg_match($lui , $line , $groups) ){
             // checking the groups then break
@@ -158,6 +180,17 @@ class syntax implements Rule
                     && $groups['rt'] != 0){
                         $i++;
                         continue;
+                }
+            }
+
+            if(preg_match($luineg , $line , $groups) ){
+                // checking the groups then break
+                if( $groups['imm'] != null && $groups['rt'] != null &&
+                    $groups['rt'] < 16 && $groups['rt'] > -1 &&
+                    $groups['imm'] < 65536 && $groups['imm'] > -65536
+                    && $groups['rt'] != 0){
+                    $i++;
+                    continue;
                 }
             }
 

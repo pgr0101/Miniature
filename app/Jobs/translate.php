@@ -164,9 +164,13 @@ class translate implements ShouldQueue
         $fill1 = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\w+))/";
 
         $space = "/((?P<label>\\w{1,16})\\s+.space\\s+(?P<value>\\d+))/";
-
         $comment = "/\\s*#(\\S*|\\s*)*/";
 
+
+        $addineg = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $orineg  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $sltineg = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
+        $luineg = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>-\\d+)/";
 
         $answer = "";
         $i = -1;
@@ -283,6 +287,53 @@ class translate implements ShouldQueue
                 $answer.=($temp."\n");
                 continue;
             }
+
+
+
+            if(preg_match($addineg , $line , $groups)){
+                // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
+                $imm = $this->sixteenBitHelper($groups['imm']);
+                $rt = $this->fourBitHelper($groups['rt']);
+                $rs = $this->fourBitHelper($groups['rs']);
+                $temp = bindec("0000"."0101".$rs.$rt.$imm);
+                //$temp = dechex($temp);
+                $answer.=($temp."\n");
+                continue;
+            }
+
+            if(preg_match($sltineg , $line , $groups)){
+                // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
+                $imm = $this->sixteenBitHelper($groups['imm']);
+                $rt = $this->fourBitHelper($groups['rt']);
+                $rs = $this->fourBitHelper($groups['rs']);
+                $temp = bindec("0000"."0110".$rs.$rt.$imm);
+                //$temp = dechex($temp);
+                $answer.=($temp."\n");
+                continue;
+            }
+
+            if(preg_match($orineg , $line , $groups)){
+                // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
+                $imm = $this->sixteenBitHelper($groups['imm']);
+                $rt = $this->fourBitHelper($groups['rt']);
+                $rs = $this->fourBitHelper($groups['rs']);
+                $temp = bindec("0000"."0111".$rs.$rt.$imm);
+                //$temp = dechex($temp);
+                $answer.=($temp."\n");
+                continue;
+            }
+
+            if(preg_match($luineg , $line , $groups) ){
+                // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero
+                $imm = $this->sixteenBitHelper($groups['imm']);
+                $rt = $this->fourBitHelper($groups['rt']);
+                $temp = bindec("0000"."1000"."0000".$rt.$imm);
+                //$temp = dechex($temp);
+                $answer.=($temp."\n");
+                continue;
+            }
+
+
 
             if(preg_match($lw , $line , $groups)){
                 // imm 16 bits , rt,rs 8 bits , opcode 4 bits , 4 bit zero

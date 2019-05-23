@@ -40,13 +40,13 @@ class label implements Rule
         $slt  = "slt\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $nand = "nand\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $or   = "or\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-        $addi = "addi\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-        $ori  = "ori\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-        $slti = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $addi = "addi\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
+        $ori  = "ori\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
+        $slti = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
         $sw = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $lw = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $beq = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-        $lui = "lui\\s+(\\d+)\\s*,\\s*(\\d+)";
+        $lui = "lui\\s+(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
         $halt = "halt\\s*";
         $jalr = "jalr\\s+(\\d+)\\s*,\\s*(\\d+)\\s*";
         $j = "j\\s+(\\d+)";
@@ -62,11 +62,12 @@ class label implements Rule
         $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
         $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
         $fill1 = "/((?P<label>\\w+)\\s+.fill\\s+(?P<value>[a-zA-Z]{1}\\w+))/";
-        $space = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
+        $space = "/((?P<label>\\w{1,16})\\s+.space\\s+(?P<value>\\d+))/";
 
         $comment = "/\\s*#(\\S*|\\s*)*/";
 
         $answer = true;
+        $pc = 0;
         $i = 1;
         $lbls = array();
         foreach($array as $line){
@@ -75,10 +76,10 @@ class label implements Rule
             $groups = array();
 
             if(preg_match($fill1 , $line , $groups)){
+                $pc++;
                 $i++;
                 continue;
             }
-
 
             if((!preg_match($fillneg , $line , $groups) && !preg_match($fill , $line , $groups)) && strpos($line,'.fill')){
                 $error = new Error;
@@ -86,24 +87,27 @@ class label implements Rule
                 $error->code_id = $this->code_id;
                 $error->save();
                 $answer = false;
+                $pc++;
                 $i++;
                 continue;
             }else if(preg_match($fillneg , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];
-                $lbl->line = $i-1;
+                $lbl->line = $pc;
                 $lbl->value = $groups['value'];
                 $lbl->code_id = $this->code_id;
                 $lbl->save();
+                $pc++;
                 $i++;
                 continue;
             }else if(preg_match($fill , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];
-                $lbl->line = $i-1;
+                $lbl->line = $pc;
                 $lbl->value = $groups['value'];
                 $lbl->code_id = $this->code_id;
                 $lbl->save();
+                $pc++;
                 $i++;
                 continue;
             }
@@ -116,6 +120,7 @@ class label implements Rule
                     $lbl->line = $i-1;
                     $lbl->code_id = $this->code_id;
                     $lbl->save();
+                    $pc++;
                     $i++;
                     continue;
                 }else{
@@ -124,6 +129,7 @@ class label implements Rule
                     $error->code_id = $this->code_id;
                     $error->save();
                     $answer = false;
+                    $pc++;
                     $i++;
                     continue;
                 }
@@ -141,10 +147,11 @@ class label implements Rule
             }else if(preg_match($space , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];
-                $lbl->line = $i-1;
+                $lbl->line = $pc;
                 $lbl->value = $groups['value'];
                 $lbl->code_id = $this->code_id;
                 $lbl->save();
+                $pc += ((int)$groups['value']);
                 $i++;
                 continue;
             }
@@ -152,6 +159,7 @@ class label implements Rule
 
             if(preg_match($codet , $line , $groups)){
                 $i++;
+                $pc++;
                 continue;
             }
 
@@ -170,15 +178,17 @@ class label implements Rule
             $error->code_id = $this->code_id;
             $error->save();
             $answer = false;
+            $pc++;
             $i++;
         }
 
+        $pc = 0;
         $i = 0;
         foreach($array as $line){
             if(preg_match($fill1 , $line , $groups)){
                 $lbl = new Labelt;
                 $lbl->label = $groups['label'];
-                $lbl->line = $i;
+                $lbl->line = $pc;
                 $lblt = Labelt::where('label' , $groups['value'])
                               ->where('code_id' , $this->code_id)
                               ->where('line' , '!=' , null)
@@ -194,8 +204,14 @@ class label implements Rule
                     $error->save();
                     $answer = false;
                 }
+                $pc++;
                 $i++;
                 continue;
+            }
+            if(preg_match($space , $line , $groups)){
+                $pc += ((int)$groups['value']);
+            }else{
+                $pc++;
             }
             $i++;
         }

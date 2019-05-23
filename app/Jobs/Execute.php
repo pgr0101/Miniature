@@ -12,6 +12,7 @@ use App\Label;
 use App\Execute as EXE;
 use function MongoDB\BSON\toJSON;
 use function PHPSTORM_META\type;
+use ReflectionProperty;
 
 class Execute implements ShouldQueue
 {
@@ -34,16 +35,18 @@ class Execute implements ShouldQueue
     protected $slt  = "/slt\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
     protected $nand = "/nand\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
     protected $or   = "/or\\s+(?P<rd>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<rt>\\d+)/";
-    protected $addi = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
-    protected $ori  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
-    protected $slti = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
+    protected $addi = "/addi\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>[-]{0,1}\\d+)/";
+    protected $ori  = "/ori\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>[-]{0,1}\\d+)/";
+    protected $slti = "/slti\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<imm>[-]{0,1}\\d+)/";
     protected $sw = "/sw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
     protected $lw = "/lw\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
     protected $beq = "/beq\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*,\\s*(?P<offset>\\w+)/";
-    protected $lui = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>\\d+)/";
+    protected $lui = "/lui\\s+(?P<rt>\\d+)\\s*,\\s*(?P<imm>[-]{0,1}\\d+)/";
     protected $halt = "/halt\\s*/";
     protected $jalr = "/jalr\\s+(?P<rt>\\d+)\\s*,\\s*(?P<rs>\\d+)\\s*/";
     protected $j = "/j\\s+(?P<offset>\\w+)/";
+
+    protected $valueregex = '/(?P<value>[-]{0,1}\\d+)/';
 
     protected $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
     protected $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
@@ -62,37 +65,97 @@ class Execute implements ShouldQueue
     }
 
     /**
-     * Execute the job.
-     * TODO : completing
      * @return void
      */
     public function handle()
     {
-        $exe = new EXE;
-        $exe->code_id = $this->code->id;
-        $this->init();
-        $this->execute();
-        $exe->exe = serialize($this->exe);
-        $exe->memoryusage = $this->ramusage;
-        $exe->registerusage = $this->registerusage;
-        $exe->save();
-        $this->code->execute_id = $exe->id;
-        $this->code->save();
+        // checking if code has exe_id we load that
+        if($this->code->execute_id == null){
+            $exe = new EXE;
+            $exe->code_id = $this->code->id;
+            $this->loaderFirstTime();
+            $this->execute();
+            $exe->exe = serialize($this->exe);
+            $exe->memoryusage = $this->ramusage;
+            $exe->registerusage = $this->registerusage;
+            $exe->code = $this->unload();
+            $exe->save();
+            $this->code->execute_id = $exe->id;
+            $this->code->save();
+        }else{
+            /** do stuff here loading code of executed before*/
+            $exe = EXE::where('code_id' , $this->code->id)->first();
+            $exe->code_id = $this->code->id;
+            $this->loader($exe->code);
+            $this->execute();
+            $exe->exe = serialize($this->exe);
+            $exe->memoryusage = $this->ramusage;
+            $exe->registerusage = $this->registerusage;
+            $exe->code = $this->unload();
+            $exe->save();
+            $this->code->execute_id = $exe->id;
+            $this->code->save();
+        }
+    }
 
-        /**
-         * serialize and unserialize an array for saving in database
-         * we use exe for this part
-        */
+    public function loader($code){
+        $this->ram = explode("\n" ,$code);
+    }
+
+    protected function unload()
+    {
+        $str = implode("\\n" , $this->ram);
+        return $str;
     }
 
     /**
-     * play the role of loader
-    */
-    public function init()
+        lw, sw , space
+        all jump commands checking
+        immediate negative value
+     */
+    public function loaderFirstTime()
     {
-        $this->ram = explode("\n" , $this->code->code);
-    }
+        $temp = explode("\n" , $this->code->code);
+        foreach ($temp as $line){
+            $groups = array();
+            if (preg_match($this->comment, $line)) {
+                continue;
+            }
+            if ($line == "" || $line == "\n" || (
+                preg_match('/\\s+/', $line && !preg_match('/\\w+/', $line)))) {
+                continue;
+            }
 
+            if (preg_match($this->space, $line, $groups)) {
+                // address f first and making space with 0 value for label value
+                $val = (int)$groups['value'];
+                for($t = 0 ; $t < $val ; $t++){
+                    array_push($this->ram , 0);
+                }
+                continue;
+            }
+
+            if (preg_match($this->fill, $line, $groups)) {
+                array_push($this->ram , ((int)$groups['value']));
+                continue;
+            }
+
+            if (preg_match($this->fill1, $line, $groups)) {
+                $label = Label::where('code_id' , $this->code->id)
+                               ->where('label' , $groups['value'])
+                               .first();
+                array_push($this->ram , $label->line);
+                continue;
+            }
+
+            if (preg_match($this->fillneg, $line, $groups)) {
+                array_push($this->ram , ((int)$groups['value']));
+                continue;
+            }
+
+            array_push($this->ram , $line);
+        }
+    }
 
     public function execute()
     {
@@ -105,37 +168,6 @@ class Execute implements ShouldQueue
             }
             $line = $this->ram[$this->pc];
             $groups = array();
-            if(preg_match($this->comment , $line)){
-                continue;
-            }
-            if($line == "" || $line == "\n" || (
-                preg_match('/\\s+/' , $line && !preg_match('/\\w+/' , $line)))){
-                continue;
-            }
-
-
-
-            if(preg_match($this->space , $line , $groups)){
-                // address f first and making space with 0 value for label value
-                $val = $groups['value'];
-                $this->pc += $val;
-                continue;
-            }
-
-            if(preg_match($this->fill , $line , $groups)){
-                $this->pc += 1;
-                continue;
-            }
-
-            if(preg_match($this->fill1 , $line , $groups)){
-                $this->pc += 1;
-                continue;
-            }
-
-            if(preg_match($this->fillneg , $line , $groups)){
-                $this->pc+=1;
-                continue;
-            }
 
             if(preg_match($this->add , $line , $groups)){
                 $rdindex = (int)$groups['rd'];
@@ -282,16 +314,16 @@ class Execute implements ShouldQueue
                     $lbl = Label::where('code_id' , $this->code->id)
                         ->where('label' , $groups['offset'])
                         ->first();
-                    $imm = (int)$lbl->value;
-                    // TODO : handling line support
+                    $imm = (int)$lbl->line;
                 }
 
-
+                $rsindex = (int)$groups['rs'];
                 $rtindex = (int)$groups['rt'];
-                $registers[$rtindex] = (int)$imm;
+                $registers[$rtindex] = (int)$this->ram[$registers[$rsindex] + $imm];
                 array_push($this->exe , [$rtindex => $registers[$rtindex]]);
 
                 $regused[$rtindex] = 1;
+                $regused[$rsindex] = 1;
 
                 $this->pc += 1;
                 continue;
@@ -305,8 +337,6 @@ class Execute implements ShouldQueue
                         ->where('label' , $groups['offset'])
                         ->first();
                     $imm = (int)$lbl->line;
-                    $lbl->value = $registers[$groups['rt']];
-                    $lbl->save();
                 }
 
                 $regused[$groups['rt']] = 1;
@@ -379,9 +409,11 @@ class Execute implements ShouldQueue
                 break;
             }
 
+            $this->pc++;
         }
-        $counts = array_count_values($regused );
-        $this->registerusage = $counts[1]/ 16;
+
+        $counts = array_count_values($regused);
+        $this->registerusage = $counts[1] / 16;
         $this->ramusage = count($this->ram) / 16000;
     }
 }
