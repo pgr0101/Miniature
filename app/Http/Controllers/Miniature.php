@@ -182,8 +182,6 @@ class Miniature extends Controller
     */
     public function getExecution(Request $req)
     {
-        $code = Code::where('id' , $req->route('id'))->first();
-        Execute::dispatch($code);
         $exe = ExeModel::where('code_id' , $req->route('id'))
                         ->first();
         if($exe){
@@ -202,5 +200,15 @@ class Miniature extends Controller
                'msg' => "not found answer"
             ]);
         }
+    }
+
+    public function execute(Request $req)
+    {
+        $code = Code::where('id' , $req->route('id'))->first();
+        Execute::dispatch($code);
+        response()->json([
+            'status' => 200 ,
+            'msg' => 'executed' ,
+        ]);
     }
 }

@@ -85,21 +85,16 @@ class Execute implements ShouldQueue
         }else{
             /** do stuff here loading code of executed before*/
             $exe = EXE::where('code_id' , $this->code->id)->first();
-            $exe->code_id = $this->code->id;
             $this->loader($exe->code);
             $this->execute();
             $exe->exe = serialize($this->exe);
-            $exe->memoryusage = $this->ramusage;
-            $exe->registerusage = $this->registerusage;
             $exe->code = $this->unload();
             $exe->save();
-            $this->code->execute_id = $exe->id;
-            $this->code->save();
         }
     }
 
-    public function loader($code){
-        $this->ram = explode("\n" ,$code);
+    public function loader($code1){
+        $this->ram = explode("\\n" ,$code1);
     }
 
     protected function unload()
@@ -163,12 +158,13 @@ class Execute implements ShouldQueue
         $registers = array_fill(0,16 , 0);
 
         while(true){
+
             if($this->pc >= count($this->ram)){
                 break;
             }
             $line = $this->ram[$this->pc];
             $groups = array();
-
+            error_log($line);
             if(preg_match($this->add , $line , $groups)){
                 $rdindex = (int)$groups['rd'];
                 $rsindex = (int)$groups['rs'];
@@ -320,8 +316,8 @@ class Execute implements ShouldQueue
                 $rsindex = (int)$groups['rs'];
                 $rtindex = (int)$groups['rt'];
                 $registers[$rtindex] = (int)$this->ram[$registers[$rsindex] + $imm];
+                error_log($this->ram[$registers[$rsindex] + $imm]);
                 array_push($this->exe , [$rtindex => $registers[$rtindex]]);
-
                 $regused[$rtindex] = 1;
                 $regused[$rsindex] = 1;
 

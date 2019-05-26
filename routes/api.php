@@ -23,6 +23,8 @@ Route::middleware(['miniatureauth'])->group(function () {
 
     Route::get('/getexecute/{username}/{password}/{id}' , 'Miniature@getExecution');
 
+    Route::get('/execute/{username}/{password}/{id}' , 'Miniature@execute');
+
 });
 
 Route::get('/', function (Request $request) {
