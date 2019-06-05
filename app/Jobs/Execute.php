@@ -354,8 +354,8 @@ class Execute implements ShouldQueue
 
                     $imm = $lbl->line;
                 }
-                $rt = $registers($groups['rt']);
-                $rs = $registers($groups['rs']);
+                $rt = $registers[$groups['rt']];
+                $rs = $registers[$groups['rs']];
 
                 $regused[$groups['rt']] = 1;
                 $regused[$groups['rs']] = 1;

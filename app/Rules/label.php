@@ -45,19 +45,20 @@ class label implements Rule
         $slti = "slti\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
         $sw = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
         $lw = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
-        $beq = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\d+)";
+        $beq = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
         $lui = "lui\\s+(\\d+)\\s*,\\s*([-]{0,1}\\d+)";
         $halt = "halt\\s*";
         $jalr = "jalr\\s+(\\d+)\\s*,\\s*(\\d+)\\s*";
         $j = "j\\s+(\\d+)";
-        $j1 = "j\\s+(?P<offset>\\w+)";
+        //$j1 = "j\\s+(?P<offset>\\w+)";
+        $j1 = "j\\s+(\\w+)";
         $sw1 = "sw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
         $lw1 = "lw\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
         $beq1 = "beq\\s+(\\d+)\\s*,\\s*(\\d+)\\s*,\\s*(\\w+)";
 
 
-        $label = "/\\s*(?P<label>\\w+)\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)/";
-        $lbltest = "\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)";
+        $label = "/\\s*(?P<label>\\w{1,})\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr|$j1|$sw1|$lw1|$beq1)\\s*/";
+//        $lbltest = "\\s+($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr)\\s*"
         $codet = "/($add|$sub|$slt|$nand|$or|$addi|$ori|$slti|$sw|$lw|$beq|$lui|$halt|$j|$jalr|$j1|$sw1|$lw1|$beq1)/";
         $fill = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>\\d+))/";
         $fillneg = "/((?P<label>\\w{1,16})\\s+.fill\\s+(?P<value>[-]{1}\\d+))/";
@@ -69,7 +70,6 @@ class label implements Rule
         $answer = true;
         $pc = 0;
         $i = 1;
-        $lbls = array();
         foreach($array as $line){
             // scope problem have to change if rules
 
@@ -113,8 +113,10 @@ class label implements Rule
             }
 
             if(preg_match($label , $line , $groups)){
-                $lbl = "/".$groups['label'].$lbltest."{1}/";
-                if(preg_match_all($lbl, $value) < 2){
+                $lbl = Labelt::where('code_id' , $this->code_id)
+                            ->where('label' , $groups['label'])
+                            ->first();
+                if($lbl == null){
                     $lbl = new Labelt;
                     $lbl->label = $groups['label'];
                     $lbl->line = $i-1;
@@ -125,7 +127,7 @@ class label implements Rule
                     continue;
                 }else{
                     $error = new Error;
-                    $error->error = "problem with label definition on line : " . $i;
+                    $error->error = "problem with label definition(multiple times) on line : " . $i;
                     $error->code_id = $this->code_id;
                     $error->save();
                     $answer = false;
@@ -174,7 +176,7 @@ class label implements Rule
 
 
             $error = new Error;
-            $error->error = "problem with label definition on line : " . $i;
+            $error->error = "problem with label on line : " . $i;
             $error->code_id = $this->code_id;
             $error->save();
             $answer = false;
